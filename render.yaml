@@ -1,0 +1,20 @@
+# Render Blueprint — Panel Agencia IA
+# Despliegue automático como sitio estático gratuito
+
+services:
+  - type: web
+    name: panel-agencia-ia
+    runtime: static
+    repo: https://github.com/borjaquer/panel-agencia-ia
+    plan: free
+    region: frankfurt
+    buildCommand: echo "No build needed — static HTML"
+    staticPublishPath: ./
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: sameorigin
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
