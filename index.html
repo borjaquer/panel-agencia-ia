@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ecosistema Operativo - Agencia IA Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-bg: #0f172a; /* Slate 900 */
+            --color-panel: #1e293b; /* Slate 800 */
+            --color-border: #334155; /* Slate 700 */
+            --accent-ai: #06b6d4; /* Cyan 500 */
+            --accent-ai-glow: rgba(6, 182, 212, 0.4);
+            --accent-physical: #f59e0b; /* Amber 500 */
+            --accent-physical-glow: rgba(245, 158, 11, 0.4);
+            --accent-legacy: #ef4444; /* Red 500 */
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--color-bg); 
+            color: #f8fafc;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Utilidades Glassmorphism */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--color-border);
+        }
+
+        /* Transiciones de Tarjetas */
+        .task-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dimmed { 
+            opacity: 0.75; /* Mucho más visible para que se lea perfecto */
+            filter: grayscale(10%); /* Casi sin filtro gris */
+            transform: scale(0.98);
+        }
+
+        /* Estados de Iluminación (Glow) */
+        .highlight-legacy {
+            border-color: var(--accent-legacy);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+            background: linear-gradient(145deg, rgba(239,68,68,0.1) 0%, rgba(30,41,59,0) 100%);
+            transform: translateY(-2px);
+        }
+
+        .highlight-ai {
+            border-color: var(--accent-ai);
+            box-shadow: 0 0 20px var(--accent-ai-glow);
+            background: linear-gradient(145deg, rgba(6,182,212,0.1) 0%, rgba(30,41,59,0) 100%);
+            transform: translateY(-2px);
+        }
+
+        .highlight-physical {
+            border-color: var(--accent-physical);
+            box-shadow: 0 0 20px var(--accent-physical-glow);
+            background: linear-gradient(145deg, rgba(245,158,11,0.1) 0%, rgba(30,41,59,0) 100%);
+            transform: translateY(-2px);
+        }
+
+        /* Ocultar scrollbar en móviles para los botones de escenario */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Estilo Toggle Moderno */
+        .toggle-btn.active {
+            background-color: var(--color-panel);
+            color: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--color-border);
+        }
+        .toggle-btn.inactive {
+            color: #94a3b8;
+            border: 1px solid transparent;
+        }
+        .toggle-btn.inactive:hover { color: #cbd5e1; }
+    </style>
+</head>
+<body class="p-3 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6 md:space-y-8">
+        
+        <header class="text-center space-y-4 pt-4">
+            <div class="inline-flex items-center justify-center p-2 bg-slate-800 rounded-2xl border border-slate-700 shadow-xl mb-2">
+                <i data-lucide="cpu" class="w-6 h-6 text-cyan-400 mr-2"></i>
+                <span class="font-mono text-sm tracking-widest text-slate-300 uppercase">Arquitectura Operativa</span>
+            </div>
+            <h1 class="text-3xl md:text-5xl font-bold tracking-tight text-white">
+                Gestión Integral <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Optimizada</span>
+            </h1>
+            <p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto">
+                Auditoría del modelo operativo: Comparativa de flujos de trabajo entre la gestión tradicional y el ecosistema automatizado por Inteligencia Artificial.
+            </p>
+            
+            <!-- Selector de Arquitectura (Segmented Control) -->
+            <div class="inline-flex p-1 mt-6 bg-slate-900 rounded-xl border border-slate-700 mx-auto w-full md:w-auto overflow-x-auto hide-scrollbar">
+                <button id="btn-legacy" onclick="setMode('legacy')" class="toggle-btn active flex-1 md:flex-none px-4 md:px-8 py-3 rounded-lg font-medium text-xs md:text-sm transition-all whitespace-nowrap flex items-center justify-center gap-2">
+                    <i data-lucide="history" class="w-4 h-4"></i> Modelo Tradicional (Manual)
+                </button>
+                <button id="btn-ai" onclick="setMode('ai')" class="toggle-btn inactive flex-1 md:flex-none px-4 md:px-8 py-3 rounded-lg font-medium text-xs md:text-sm transition-all whitespace-nowrap flex items-center justify-center gap-2">
+                    <i data-lucide="zap" class="w-4 h-4"></i> Ecosistema IA (Automatizado)
+                </button>
+            </div>
+        </header>
+
+        <!-- Centro de Comando (Simulador) -->
+        <div class="glass-panel rounded-2xl p-4 md:p-6 shadow-2xl">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+                <div>
+                    <h2 class="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
+                        <i data-lucide="activity" class="text-cyan-400"></i> Eventos del Sistema
+                    </h2>
+                    <p class="text-xs md:text-sm text-slate-400 mt-1">Selecciona un evento (trigger) para visualizar la carga de procesamiento.</p>
+                </div>
+                <button onclick="resetScenarios()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 rounded-lg text-xs md:text-sm font-medium transition-colors flex items-center gap-2 w-full md:w-auto justify-center">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Resetear
+                </button>
+            </div>
+            
+            <!-- Botones de Eventos (Scrollable en móvil) -->
+            <div class="flex overflow-x-auto hide-scrollbar gap-2 md:gap-3 pb-2 md:pb-0" id="scenario-buttons">
+                <button onclick="simulateScenario('reserva')" class="shrink-0 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-medium text-slate-200 transition-colors">1. Nueva Reserva</button>
+                <button onclick="simulateScenario('checkin')" class="shrink-0 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-medium text-slate-200 transition-colors">2. Check-in (02:00 AM)</button>
+                <button onclick="simulateScenario('duda')" class="shrink-0 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-medium text-slate-200 transition-colors">3. Consulta Huésped</button>
+                <button onclick="simulateScenario('emergencia')" class="shrink-0 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-medium text-slate-200 transition-colors">4. Alerta Mantenimiento</button>
+                <button onclick="simulateScenario('checkout')" class="shrink-0 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-medium text-slate-200 transition-colors">5. Fin de Estancia (Checkout)</button>
+            </div>
+            
+            <!-- Consola de Resultados (Condicional) -->
+            <div id="action-console" class="mt-4 flex flex-col gap-3 hidden">
+                <!-- Box IA (Cyan) -->
+                <div id="msg-ai" class="hidden p-4 rounded-xl border border-cyan-500/30 bg-cyan-900/20 flex items-start gap-3">
+                    <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-lg shrink-0 mt-0.5"><i data-lucide="cpu" class="w-5 h-5"></i></div>
+                    <div>
+                        <h4 class="text-xs font-mono text-cyan-400 uppercase tracking-wider mb-1">Ecosistema IA</h4>
+                        <p class="text-sm text-slate-200" id="text-ai"></p>
+                    </div>
+                </div>
+                <!-- Box Físico (Amber) -->
+                <div id="msg-physical" class="hidden p-4 rounded-xl border border-amber-500/30 bg-amber-900/20 flex items-start gap-3">
+                    <div class="p-2 bg-amber-500/20 text-amber-400 rounded-lg shrink-0 mt-0.5"><i data-lucide="user" class="w-5 h-5"></i></div>
+                    <div>
+                        <h4 class="text-xs font-mono text-amber-400 uppercase tracking-wider mb-1">Gestor In-Situ</h4>
+                        <p class="text-sm text-slate-200" id="text-physical"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Dual de Nodos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            
+            <!-- COLUMNA 1: GESTOR FÍSICO -->
+            <div class="glass-panel rounded-2xl p-5 md:p-6 border-t-4 border-t-amber-500" id="col-fisico">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                        <i data-lucide="hard-hat" class="w-6 h-6 md:w-8 md:h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">El Trabajo de Tu Padre</h2>
+                        <p class="text-amber-400/80 font-medium text-xs md:text-sm mt-1" id="rol-fisico">Gestor Físico (Estrés y sin tiempo)</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Tareas Legacy (Solo visibles en modo Tradicional) -->
+                    <div id="card-admin-manual" class="task-card legacy-only bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-red-500/20 text-red-400 rounded-lg shrink-0"><i data-lucide="file-x-2" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Papeleo y Calendarios a mano</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Apuntar las reservas en Booking/Airbnb con miedo a que se pisen, y hacer los partes de la policía a mano.</p>
+                        </div>
+                    </div>
+
+                    <div id="card-telefono-manual" class="task-card legacy-only bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-red-500/20 text-red-400 rounded-lg shrink-0"><i data-lucide="phone-off" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Contestar el Teléfono 24/7</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Atender llamadas o WhatsApps a cualquier hora porque el cliente no sabe encender el termo o el aire.</p>
+                        </div>
+                    </div>
+
+                    <div id="card-llaves-manual" class="task-card legacy-only bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-red-500/20 text-red-400 rounded-lg shrink-0"><i data-lucide="key" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Entrega Física de Llaves</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Tener que ir en persona al apartamento a esperar al cliente para abrirle la puerta, a veces de madrugada.</p>
+                        </div>
+                    </div>
+
+                    <!-- Tareas Físicas Reales (Permanentes) -->
+                    <div id="card-limpieza" class="task-card physical-card bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-amber-500/20 text-amber-400 rounded-lg shrink-0"><i data-lucide="spray-can" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Organizar la Limpieza</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Avisar a las limpiadoras, cambiar las sábanas y dejar el piso listo para el siguiente.</p>
+                        </div>
+                    </div>
+
+                    <div id="card-mantenimiento" class="task-card physical-card bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-amber-500/20 text-amber-400 rounded-lg shrink-0"><i data-lucide="wrench" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Arreglar Cosas (Reparaciones)</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Ir al piso a arreglar un grifo que gotea, cambiar bombillas o solucionar una tubería rota.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 2: SOFTWARE IA -->
+            <div class="glass-panel rounded-2xl p-5 md:p-6 border-t-4 border-t-cyan-500" id="col-ia">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                        <i data-lucide="network" class="w-6 h-6 md:w-8 md:h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">El Trabajo de tu Software</h2>
+                        <p class="text-cyan-400/80 font-medium text-xs md:text-sm mt-1" id="rol-ia">Lo que haces tú actualmente (Poco)</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Tareas IA Legacy (Lo actual) -->
+                    <div id="card-maps-actual" class="task-card legacy-only bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-lg shrink-0"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Conseguir Clientes por Google</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Haces que llamen gracias al mapa de Google, coges el teléfono y le pasas el marrón a tu padre.</p>
+                        </div>
+                    </div>
+
+                    <!-- Tareas IA Enterprise (Futuro) -->
+                    <div id="card-web" class="task-card ai-only hidden bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-lg shrink-0"><i data-lucide="globe" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Web Propia (Cero Fallos)</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">El sistema coge la reserva, la cobra y bloquea Airbnb y Booking al instante para que nadie más reserve.</p>
+                        </div>
+                    </div>
+
+                    <div id="card-checkin" class="task-card ai-only hidden bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-lg shrink-0"><i data-lucide="scan-face" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Parte de Policía con el Móvil</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">El cliente manda la foto de su DNI desde su casa y el sistema la envía a la Policía automáticamente.</p>
+                        </div>
+                    </div>
+
+                    <div id="card-domotica" class="task-card ai-only hidden bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-lg shrink-0"><i data-lucide="key-square" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Abrir Puertas sin Llave</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">El sistema le manda un código al móvil del cliente que solo sirve durante los días que ha pagado.</p>
+                        </div>
+                    </div>
+
+                    <div id="card-conserje" class="task-card ai-only hidden bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-lg shrink-0"><i data-lucide="bot-message-square" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Bot que responde WhatsApps</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Contesta al instante dudas como la clave del WiFi o dónde comer. Tu padre ni se entera.</p>
+                        </div>
+                    </div>
+
+                    <div id="card-seo" class="task-card ai-only hidden bg-slate-800 p-4 rounded-xl border border-slate-700 flex gap-4 items-start">
+                        <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-lg shrink-0"><i data-lucide="star" class="w-5 h-5"></i></div>
+                        <div>
+                            <h3 class="font-semibold text-white text-sm md:text-base">Conseguir Reseñas de 5 Estrellas</h3>
+                            <p class="text-xs md:text-sm text-slate-300 mt-1">Manda un mensaje al irse. Si están felices, les pide que lo pongan en Google. Si están cabreados, te avisa por privado.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let currentMode = 'legacy'; // Modos: 'legacy' o 'ai'
+        
+        const cards = document.querySelectorAll('.task-card');
+        const legacyCards = document.querySelectorAll('.legacy-only');
+        const aiCards = document.querySelectorAll('.ai-only');
+        
+        // Elementos de la consola
+        const actionConsole = document.getElementById('action-console');
+        const msgAi = document.getElementById('msg-ai');
+        const msgPhysical = document.getElementById('msg-physical');
+        const textAi = document.getElementById('text-ai');
+        const textPhysical = document.getElementById('text-physical');
+
+        // Base de Datos Estructurada de Escenarios
+        const dbEscenarios = {
+            legacy: {
+                reserva: {
+                    active: ['card-maps-actual', 'card-admin-manual'],
+                    ia: "TÚ: Recibes la llamada por Google Maps, apuntas en un papel y le pasas el marrón a tu padre.",
+                    fisico: "TU PADRE: Coge el teléfono, negocia, y se mete en Booking a bloquear las fechas rezando para no equivocarse."
+                },
+                checkin: {
+                    active: ['card-llaves-manual', 'card-admin-manual'],
+                    ia: "TÚ: No haces nada, tu sistema actual no llega a tanto.",
+                    fisico: "TU PADRE: Tiene que ir a las 2:00 AM al piso, esperar al cliente, pedir los DNIs, rellenar el papel de la policía a mano y darle las llaves metálicas."
+                },
+                duda: {
+                    active: ['card-telefono-manual'],
+                    ia: "TÚ: Estás durmiendo. Tu sistema no sabe contestar dudas.",
+                    fisico: "TU PADRE: Le suena el móvil a la 1 de la madrugada para explicar por teléfono cómo se enciende el termo del agua."
+                },
+                emergencia: {
+                    active: ['card-mantenimiento', 'card-telefono-manual'],
+                    ia: "TÚ: No te enteras de nada.",
+                    fisico: "TU PADRE: Le llaman enfadados porque hay una fuga. Tiene que coger el coche rápido e ir a arreglarlo."
+                },
+                checkout: {
+                    active: ['card-llaves-manual', 'card-limpieza', 'card-telefono-manual'],
+                    ia: "TÚ: No participas. Tu ficha de Google no hace esto sola.",
+                    fisico: "TU PADRE: Va al piso a recoger las llaves, avisa a las limpiadoras y le manda un WhatsApp al cliente mendigando una buena reseña."
+                }
+            },
+            ai: {
+                reserva: {
+                    active: ['card-web'],
+                    ia: "EL SOFTWARE: La reserva entra por la web (sin pagar a Airbnb). Cobra el dinero y bloquea todas las plataformas a la vez.",
+                    fisico: "TU PADRE: No hace absolutamente nada. Solo ve que entra el dinero en la cuenta bancaria."
+                },
+                checkin: {
+                    active: ['card-checkin', 'card-domotica'],
+                    ia: "EL SOFTWARE: El cliente mandó su DNI con el móvil por la tarde a la Policía. Ahora llega y abre la puerta con su código PIN.",
+                    fisico: "TU PADRE: No hace nada. ¡Está durmiendo tranquilamente en su casa!"
+                },
+                duda: {
+                    active: ['card-conserje'],
+                    ia: "EL SOFTWARE: El bot lee el WhatsApp del cliente y le manda al instante un vídeo de cómo encender el termo.",
+                    fisico: "TU PADRE: No le suena el teléfono. Sigue durmiendo sin interrupciones."
+                },
+                emergencia: {
+                    active: ['card-conserje', 'card-mantenimiento'],
+                    ia: "EL SOFTWARE: Lee el WhatsApp, detecta la palabra 'fuga', calma al cliente y le dispara un aviso urgente a tu padre.",
+                    fisico: "TU PADRE: Recibe el aviso, va al piso y arregla la tubería. (El único trabajo físico que de verdad hace falta)."
+                },
+                checkout: {
+                    active: ['card-seo', 'card-limpieza'],
+                    ia: "EL SOFTWARE: Le manda un mensaje al móvil pidiendo 5 estrellas en Google para subir la nota del apartamento.",
+                    fisico: "TU PADRE: Las limpiadoras entran con su propio PIN. Tu padre solo supervisa que todo quede perfecto."
+                }
+            }
+        };
+
+        function setMode(mode) {
+            currentMode = mode;
+            const btnLegacy = document.getElementById('btn-legacy');
+            const btnAi = document.getElementById('btn-ai');
+            
+            resetScenarios();
+
+            if (mode === 'legacy') {
+                btnLegacy.className = "toggle-btn active flex-1 md:flex-none px-4 md:px-8 py-3 rounded-lg font-medium text-xs md:text-sm transition-all whitespace-nowrap flex items-center justify-center gap-2";
+                btnAi.className = "toggle-btn inactive flex-1 md:flex-none px-4 md:px-8 py-3 rounded-lg font-medium text-xs md:text-sm transition-all whitespace-nowrap flex items-center justify-center gap-2";
+
+                document.getElementById('rol-fisico').innerHTML = "Gestor Físico (Estrés y sin tiempo)";
+                document.getElementById('rol-ia').innerText = "Lo que haces tú actualmente (Poco)";
+                
+                legacyCards.forEach(c => { c.classList.remove('hidden'); c.classList.add('flex'); });
+                aiCards.forEach(c => { c.classList.add('hidden'); c.classList.remove('flex'); });
+            } else {
+                btnAi.className = "toggle-btn active flex-1 md:flex-none px-4 md:px-8 py-3 rounded-lg font-medium text-xs md:text-sm transition-all whitespace-nowrap flex items-center justify-center gap-2";
+                btnLegacy.className = "toggle-btn inactive flex-1 md:flex-none px-4 md:px-8 py-3 rounded-lg font-medium text-xs md:text-sm transition-all whitespace-nowrap flex items-center justify-center gap-2";
+
+                document.getElementById('rol-fisico').innerText = "Director de Operaciones (Libre y Eficiente)";
+                document.getElementById('rol-ia').innerText = "El Sistema Automatizado que te montas";
+                
+                legacyCards.forEach(c => { c.classList.add('hidden'); c.classList.remove('flex'); });
+                aiCards.forEach(c => { c.classList.remove('hidden'); c.classList.add('flex'); });
+            }
+        }
+
+        function simulateScenario(type) {
+            resetScenarios();
+            const data = dbEscenarios[currentMode][type];
+            
+            // Iluminar tarjetas correspondientes
+            data.active.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.classList.remove('dimmed');
+                    if (currentMode === 'legacy' && (id === 'card-admin-manual' || id === 'card-telefono-manual')) {
+                        el.classList.add('highlight-legacy');
+                    } else if (el.classList.contains('physical-card')) {
+                        el.classList.add('highlight-physical');
+                    } else {
+                        el.classList.add('highlight-ai');
+                    }
+                }
+            });
+
+            // Lógica de renderizado de la consola siempre activa
+            actionConsole.classList.remove('hidden');
+
+            textAi.innerHTML = data.ia;
+            msgAi.classList.remove('hidden');
+
+            textPhysical.innerHTML = data.fisico;
+            msgPhysical.classList.remove('hidden');
+        }
+
+        function resetScenarios() {
+            cards.forEach(card => {
+                card.classList.remove('highlight-physical', 'highlight-ai', 'highlight-legacy');
+                if(!card.classList.contains('hidden')) {
+                    card.classList.add('dimmed');
+                }
+            });
+            actionConsole.classList.add('hidden');
+            msgAi.classList.add('hidden');
+            msgPhysical.classList.add('hidden');
+        }
+
+        // Inicializar dimming general
+        resetScenarios();
+    </script>
+</body>
+</html>
